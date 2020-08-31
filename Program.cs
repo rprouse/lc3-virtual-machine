@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace lc3_virtual_machine
+namespace LC3
 {
     class Program
     {
