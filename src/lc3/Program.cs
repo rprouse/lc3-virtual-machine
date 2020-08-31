@@ -1,12 +1,18 @@
-﻿using System;
-
 namespace LC3
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var vm = new VirtualMachine();
+            var result = vm.Load(args);
+            if (result != 0)
+                return result;
+
+            vm.Setup();
+            vm.Run();
+
+            return 0;
         }
     }
 }
