@@ -2,8 +2,7 @@ using System;
 
 namespace LC3
 {
-    [Flags]
-    public enum ConditionFlags : byte
+    public enum ConditionFlags : ushort
     {
         POS = 0x1,
         ZRO = 0x2,

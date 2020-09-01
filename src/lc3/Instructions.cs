@@ -18,4 +18,5 @@ namespace LC3
         RES = 0xD,    // reserved (unused)
         LEA = 0xE,    // load effective address
         TRAP = 0xF    // execute trap
+    }
 }

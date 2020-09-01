@@ -1,3 +1,8 @@
+using System.Runtime.CompilerServices;
+
+// For unit tests
+[assembly:InternalsVisibleTo("lc3.tests")]
+
 namespace LC3
 {
     class Program
