@@ -76,43 +76,43 @@ namespace LC3
                         ADD(instr);
                         break;
                     case Instuctions.AND:
-                        //{AND, 7}
+                        AND(instr);
                         break;
                     case Instuctions.NOT:
-                        //{ NOT, 7}
+                        NOT(instr);
                         break;
                     case Instuctions.BR:
-                        //{ BR, 7}
+                        BR(instr);
                         break;
                     case Instuctions.JMP:
-                        //{ JMP, 7}
+                        JMP(instr);
                         break;
                     case Instuctions.JSR:
-                        //{ JSR, 7}
+                        JSR(instr);
                         break;
                     case Instuctions.LD:
-                        //{ LD, 7}
+                        LD(instr);
                         break;
                     case Instuctions.LDI:
                         LDI(instr);
                         break;
                     case Instuctions.LDR:
-                        //{ LDR, 7}
+                        LDR(instr);
                         break;
                     case Instuctions.LEA:
-                        //{ LEA, 7}
+                        LEA(instr);
                         break;
                     case Instuctions.ST:
-                        //{ ST, 7}
+                        ST(instr);
                         break;
                     case Instuctions.STI:
-                        //{ STI, 7}
+                        STI(instr);
                         break;
                     case Instuctions.STR:
-                        //{ STR, 7}
+                        STR(instr);
                         break;
                     case Instuctions.TRAP:
-                        //{ TRAP, 8}
+                        TRAP(instr);
                         break;
                     case Instuctions.RES:
                     case Instuctions.RTI:
@@ -167,27 +167,66 @@ namespace LC3
         {
             // Destination register (DR)
             ushort dr = instr.Bits(11, 9);
+
+            // First operand (SR1)
+            ushort sr1 = instr.Bits(8, 6);
+
+            // Immediate or register mode
+            ushort imm_flag = instr.Bits(5, 5);
+
+            if (imm_flag == 1)
+            {
+                ushort imm5 = instr.LSB(5).SignExtend(5);
+                Registers[dr] = (ushort)(Registers[sr1] & imm5);
+            }
+            else
+            {
+                ushort sr2 = instr.LSB(3);
+                Registers[dr] = (ushort)(Registers[sr1] & Registers[sr2]);
+            }
             UpdateFlags(dr);
         }
 
         internal void BR(ushort instr)
         {
+            ushort nzp = instr.Bits(11, 9);
+            ushort pcOffset9 = instr.LSB(9).SignExtend(9);
+            if(nzp == Registers[COND])
+            {
+                Registers[PC] += pcOffset9;
+            }
         }
 
         // JMP and RET
         internal void JMP(ushort instr)
         {
+            ushort baseR = instr.Bits(8, 6);
+            Registers[PC] = Registers[baseR];
         }
 
         // JSR and JSRR
         internal void JSR(ushort instr)
         {
+            Registers[R7] = Registers[PC];
+            ushort flag = instr.Bits(11, 11);
+            if(flag == 0)
+            {
+                ushort baseR = instr.Bits(8, 6);
+                Registers[PC] = Registers[baseR];
+            }
+            else
+            {
+                ushort pcOffset11 = instr.LSB(11).SignExtend(11);
+                Registers[PC] += pcOffset11;
+            }
         }
 
         internal void LD(ushort instr)
         {
             // Destination register (DR)
-            ushort dr = instr.Bits(11, 9);
+            ushort dr = instr.Bits(11, 9); 
+            ushort pcOffset9 = instr.LSB(9).SignExtend(9);
+            Registers[dr] = Memory[Registers[PC] + pcOffset9];
             UpdateFlags(dr);
         }
 
@@ -205,6 +244,9 @@ namespace LC3
         {
             // Destination register (DR)
             ushort dr = instr.Bits(11, 9);
+            ushort baseR = instr.Bits(8, 6);
+            ushort pcOffset6 = instr.LSB(6).SignExtend(6);
+            Registers[dr] = Memory[Registers[baseR] + pcOffset6];
             UpdateFlags(dr);
         }
 
@@ -212,6 +254,8 @@ namespace LC3
         {
             // Destination register (DR)
             ushort dr = instr.Bits(11, 9);
+            ushort pcOffset9 = instr.LSB(9).SignExtend(9);
+            Registers[dr] = (ushort)(Registers[PC] + pcOffset9);
             UpdateFlags(dr);
         }
 
@@ -219,11 +263,9 @@ namespace LC3
         {
             // Destination register (DR)
             ushort dr = instr.Bits(11, 9);
+            ushort sr = instr.Bits(8, 6);
+            Registers[dr] = (ushort)~Registers[sr];
             UpdateFlags(dr);
-        }
-
-        internal void RTI(ushort instr)
-        {
         }
 
         internal void ST(ushort instr)
@@ -235,6 +277,10 @@ namespace LC3
         }
 
         internal void STR(ushort instr)
+        {
+        }
+
+        internal void TRAP(ushort instr)
         {
         }
     }
