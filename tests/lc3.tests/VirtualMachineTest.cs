@@ -57,5 +57,20 @@ namespace lc3.tests
             _vm.Add(instr);
             _vm.Registers[VirtualMachine.R2].Should().Be((ushort)expected);
         }
+
+        [TestCase(1, 1, ConditionFlags.POS)]
+        [TestCase(1, -1, ConditionFlags.ZRO)]
+        [TestCase(0, -1, ConditionFlags.NEG)]
+        [TestCase(1, 2, ConditionFlags.POS)]
+        [TestCase(0, -2, ConditionFlags.NEG)]
+        public void AddUpdatesConditionRegister(int r3, int r4, ConditionFlags expected)
+        {
+            // ADD R2, R3, R4 (R2 = R3 + R4)
+            ushort instr = 0x14C4;
+            _vm.Registers[VirtualMachine.R3] = (ushort)r3;
+            _vm.Registers[VirtualMachine.R4] = (ushort)r4;
+            _vm.Add(instr);
+            _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
+        }
     }
 }
