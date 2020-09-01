@@ -168,11 +168,9 @@ namespace LC3
         {
             // Destination register (DR)
             ushort dr = (ushort)((instr >> 9) & 0x7);
-
             ushort pcOffset9 = ((ushort)(instr & 0x1FF)).SignExtend(9);
-
-            Registers[dr] = Memory[Memory[Registers[PC] + pcOffset9]];
-
+            ushort addr = (ushort)(Registers[PC] + pcOffset9);
+            Registers[dr] = Memory[Memory[addr]];
             UpdateFlags(dr);
         }
     }

@@ -1,6 +1,7 @@
 using LC3;
 using FluentAssertions;
 using NUnit.Framework;
+using LC3.Extensions;
 
 namespace lc3.tests
 {
@@ -12,6 +13,7 @@ namespace lc3.tests
         public void SetUp()
         {
             _vm = new VirtualMachine();
+            _vm.Registers[VirtualMachine.PC] = VirtualMachine.PC_START;
         }
 
         [Test]
@@ -70,6 +72,32 @@ namespace lc3.tests
             _vm.Registers[VirtualMachine.R3] = (ushort)r3;
             _vm.Registers[VirtualMachine.R4] = (ushort)r4;
             _vm.Add(instr);
+            _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
+        }
+
+        [TestCase(-1, 0x01FF)]   // Minus one in twos compliment 9-bit number
+        [TestCase(0, 0x0000)]
+        [TestCase(1, 0x0001)]
+        public void LdiLoadFromMemory(int offset, int bOffset)
+        {
+            // LDI R4, bOffset
+            ushort instr = (ushort)(0xA800 | bOffset);
+            _vm.Memory[VirtualMachine.PC_START+offset] = 0x7000;
+            _vm.Memory[0x7000] = 42;
+            _vm.LDI(instr);
+            _vm.Registers[VirtualMachine.R4].Should().Be(42);
+        }
+
+        [TestCase(-1, ConditionFlags.NEG)]
+        [TestCase(0, ConditionFlags.ZRO)]
+        [TestCase(1, ConditionFlags.POS)]
+        public void LdiUpdatesConditionalRegisters(int x, ConditionFlags expected)
+        {
+            // LDI R4, 1
+            ushort instr = 0xA801;
+            _vm.Memory[VirtualMachine.PC_START + 1] = 0x7000;
+            _vm.Memory[0x7000] = ((ushort)x).SignExtend(16);
+            _vm.LDI(instr);
             _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
         }
     }
