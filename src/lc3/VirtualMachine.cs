@@ -73,7 +73,7 @@ namespace LC3
                 switch (op)
                 {
                     case Instuctions.ADD:
-                        Add(instr);
+                        ADD(instr);
                         break;
                     case Instuctions.AND:
                         //{AND, 7}
@@ -139,7 +139,7 @@ namespace LC3
             }
         }
 
-        internal void Add(ushort instr)
+        internal void ADD(ushort instr)
         {
             // Destination register (DR)
             ushort dr = instr.Bits(11, 9);
@@ -163,6 +163,34 @@ namespace LC3
             UpdateFlags(dr);
         }
 
+        internal void AND(ushort instr)
+        {
+            // Destination register (DR)
+            ushort dr = instr.Bits(11, 9);
+            UpdateFlags(dr);
+        }
+
+        internal void BR(ushort instr)
+        {
+        }
+
+        // JMP and RET
+        internal void JMP(ushort instr)
+        {
+        }
+
+        // JSR and JSRR
+        internal void JSR(ushort instr)
+        {
+        }
+
+        internal void LD(ushort instr)
+        {
+            // Destination register (DR)
+            ushort dr = instr.Bits(11, 9);
+            UpdateFlags(dr);
+        }
+
         internal void LDI(ushort instr)
         {
             // Destination register (DR)
@@ -171,6 +199,43 @@ namespace LC3
             ushort addr = (ushort)(Registers[PC] + pcOffset9);
             Registers[dr] = Memory[Memory[addr]];
             UpdateFlags(dr);
+        }
+
+        internal void LDR(ushort instr)
+        {
+            // Destination register (DR)
+            ushort dr = instr.Bits(11, 9);
+            UpdateFlags(dr);
+        }
+
+        internal void LEA(ushort instr)
+        {
+            // Destination register (DR)
+            ushort dr = instr.Bits(11, 9);
+            UpdateFlags(dr);
+        }
+
+        internal void NOT(ushort instr)
+        {
+            // Destination register (DR)
+            ushort dr = instr.Bits(11, 9);
+            UpdateFlags(dr);
+        }
+
+        internal void RTI(ushort instr)
+        {
+        }
+
+        internal void ST(ushort instr)
+        {
+        }
+
+        internal void STI(ushort instr)
+        {
+        }
+
+        internal void STR(ushort instr)
+        {
         }
     }
 }

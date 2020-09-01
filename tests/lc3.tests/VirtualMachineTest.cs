@@ -43,7 +43,7 @@ namespace lc3.tests
             ushort instr = 0x14C4;
             _vm.Registers[VirtualMachine.R3] = (ushort)r3;
             _vm.Registers[VirtualMachine.R4] = (ushort)r4;
-            _vm.Add(instr);
+            _vm.ADD(instr);
             _vm.Registers[VirtualMachine.R2].Should().Be((ushort)expected);
         }
 
@@ -56,7 +56,7 @@ namespace lc3.tests
             // ADD R2, R3, #imm5 (R2 = R3 + imm5)
             ushort instr = (ushort)(0x14E0 | (ushort)imm5);
             _vm.Registers[VirtualMachine.R3] = (ushort)r3;
-            _vm.Add(instr);
+            _vm.ADD(instr);
             _vm.Registers[VirtualMachine.R2].Should().Be((ushort)expected);
         }
 
@@ -71,7 +71,7 @@ namespace lc3.tests
             ushort instr = 0x14C4;
             _vm.Registers[VirtualMachine.R3] = (ushort)r3;
             _vm.Registers[VirtualMachine.R4] = (ushort)r4;
-            _vm.Add(instr);
+            _vm.ADD(instr);
             _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
         }
 
