@@ -94,7 +94,7 @@ namespace LC3
                         //{ LD, 7}
                         break;
                     case Instuctions.LDI:
-                        //{ LDI, 6}
+                        LDI(instr);
                         break;
                     case Instuctions.LDR:
                         //{ LDR, 7}
@@ -142,10 +142,10 @@ namespace LC3
         internal void Add(ushort instr)
         {
             // Destination register (DR)
-            ushort r0 = (ushort)((instr >> 9) & 0x7);
+            ushort dr = (ushort)((instr >> 9) & 0x7);
 
             // First operand (SR1)
-            ushort r1 = (ushort)((instr >> 6) & 0x7);
+            ushort sr1 = (ushort)((instr >> 6) & 0x7);
 
             // Immediate or register mode
             ushort imm_flag = (ushort)((instr >> 5) & 0x1);
@@ -154,14 +154,26 @@ namespace LC3
             {
                 ushort imm5 = (ushort)(instr & 0x1F);
                 ushort x = imm5.SignExtend(5);
-                Registers[r0] = (ushort)(Registers[r1] + x);
+                Registers[dr] = (ushort)(Registers[sr1] + x);
             }
             else
             {
-                ushort r2 = (ushort)(instr & 0x7);
-                Registers[r0] = (ushort)(Registers[r1] + Registers[r2]);
+                ushort sr2 = (ushort)(instr & 0x7);
+                Registers[dr] = (ushort)(Registers[sr1] + Registers[sr2]);
             }
-            UpdateFlags(r0);
+            UpdateFlags(dr);
+        }
+
+        internal void LDI(ushort instr)
+        {
+            // Destination register (DR)
+            ushort dr = (ushort)((instr >> 9) & 0x7);
+
+            ushort pcOffset9 = ((ushort)(instr & 0x1FF)).SignExtend(9);
+
+            Registers[dr] = Memory[Memory[Registers[PC] + pcOffset9]];
+
+            UpdateFlags(dr);
         }
     }
 }
