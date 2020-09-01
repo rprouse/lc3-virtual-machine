@@ -112,7 +112,8 @@ namespace LC3
                         STR(instr);
                         break;
                     case Instuctions.TRAP:
-                        TRAP(instr);
+                        if (TRAP(instr))
+                            running = false;
                         break;
                     case Instuctions.RES:
                     case Instuctions.RTI:
@@ -270,18 +271,107 @@ namespace LC3
 
         internal void ST(ushort instr)
         {
+            ushort sr = instr.Bits(11, 9);
+            ushort pcOffset9 = instr.LSB(9).SignExtend(9);
+            Memory[Registers[PC] + pcOffset9] = sr;
         }
 
         internal void STI(ushort instr)
         {
+            ushort sr = instr.Bits(11, 9);
+            ushort pcOffset9 = instr.LSB(9).SignExtend(9);
+            Memory[Memory[Registers[PC] + pcOffset9]] = sr;
         }
 
         internal void STR(ushort instr)
         {
+            ushort sr = instr.Bits(11, 9);
+            ushort baseR = instr.Bits(8, 6);
+            ushort pcOffset6 = instr.LSB(6).SignExtend(6);
+            Memory[Registers[baseR] + pcOffset6] = sr;
         }
 
-        internal void TRAP(ushort instr)
+        internal bool TRAP(ushort instr)
         {
+            TrapVector trap = (TrapVector)instr.LSB(8);
+            switch (trap)
+            {
+                case TrapVector.GETC:
+                    TRAP_GETC();
+                    break;
+                case TrapVector.OUT:
+                    TRAP_OUT();
+                    break;
+                case TrapVector.PUTS:
+                    TRAP_PUTS();
+                    break;
+                case TrapVector.IN:
+                    TRAP_IN();
+                    break;
+                case TrapVector.PUTSP:
+                    TRAP_PUTSP();
+                    break;
+                case TrapVector.HALT:
+                    // Halt execution and print a message on the console
+                    Console.WriteLine("== HALT AND CATCH FIRE ==");
+                    return true;
+                default:
+                    break;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Read a single character from the keyboard. The character is not echoed onto the
+        /// console. Its ASCII code is copied into R0. The high eight bits of R0 are cleared
+        /// </summary>
+        private void TRAP_GETC()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Write a character in R0[7:0] to the console display.
+        /// </summary>
+        private void TRAP_OUT()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Write a string of ASCII characters to the console display. The characters are contained
+        /// in consecutive memory locations, one character per memory location, starting with
+        /// the address specified in R0. Writing terminates with the occurrence of x0000 in a
+        /// memory location
+        /// </summary>
+        private void TRAP_PUTS()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Print a prompt on the screen and read a single character from the keyboard. The
+        /// character is echoed onto the console monitor, and its ASCII code is copied into R0.
+        /// The high eight bits of R0 are cleared.
+        /// </summary>
+        private void TRAP_IN()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Write a string of ASCII characters to the console. The characters are contained in
+        /// consecutive memory locations, two characters per memory location, starting with the
+        /// address specified in R0. The ASCII code contained in bits [7:0] of a memory location
+        /// is written to the console first. Then the ASCII code contained in bits [15:8] of that
+        /// memory location is written to the console. (A character string consisting of an odd
+        /// number of characters to be written will have x00 in bits [15:8] of the memory
+        /// location containing the last character to be written.) Writing terminates with the
+        /// occurrence of x0000 in a memory location.
+        /// </summary>
+        private void TRAP_PUTSP()
+        {
+            throw new NotImplementedException();
         }
     }
 }
