@@ -227,7 +227,8 @@ namespace LC3
             // Destination register (DR)
             ushort dr = instr.Bits(11, 9); 
             ushort pcOffset9 = instr.LSB(9).SignExtend(9);
-            Registers[dr] = Memory[Registers[PC] + pcOffset9];
+            ushort address = (ushort)(Registers[PC] + pcOffset9);
+            Registers[dr] = Memory[address];
             UpdateFlags(dr);
         }
 

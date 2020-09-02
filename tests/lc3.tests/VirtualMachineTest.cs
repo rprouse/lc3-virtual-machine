@@ -111,6 +111,83 @@ namespace lc3.tests
             _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
         }
 
+        [TestCase(0b_0000_0010_0000_0011, ConditionFlags.POS)]
+        [TestCase(0b_0000_0100_0000_0011, ConditionFlags.ZRO)]
+        [TestCase(0b_0000_1000_0000_0011, ConditionFlags.NEG)]
+        public void BrUpdatesPCOffset(int instr, ConditionFlags flags)
+        {
+            _vm.Registers[VirtualMachine.COND] = (ushort)flags;
+            _vm.BR((ushort)instr);
+            _vm.Registers[VirtualMachine.PC].Should().Be(VirtualMachine.PC_START + 0B_0011);
+        }
+
+        [Test]
+        public void JmpUpdatesPCOffset()
+        {
+            // JMP R2
+            ushort instr = 0B_1100_0000_1000_0000;
+            _vm.Registers[VirtualMachine.R2] = 0x7777;
+            _vm.JMP(instr);
+            _vm.Registers[VirtualMachine.PC].Should().Be(0x7777);
+        }
+
+        [Test]
+        public void RetUpdatesPCOffset()
+        {
+            // RET
+            ushort instr = 0B_1100_0001_1100_0000;
+            _vm.Registers[VirtualMachine.R7] = 0x7777;
+            _vm.JMP(instr);
+            _vm.Registers[VirtualMachine.PC].Should().Be(0x7777);
+        }
+
+        [Test]
+        public void JsrSavesTheProgramCounterToRegister7()
+        {
+            // JSR LABEL
+            ushort instr = 0B_0100_1000_0000_0001;
+            _vm.JSR(instr);
+            _vm.Registers[VirtualMachine.R7].Should().Be(VirtualMachine.PC_START);
+        }
+
+        [TestCase(0B_0100_1000_0000_0001, VirtualMachine.PC_START + 1)]  // Positive Jump
+        [TestCase(0B_0100_1111_1111_1111, VirtualMachine.PC_START - 1)]  // Negative Jump
+        public void JsrUpdatesTheProgramCounter(int instr, int expected)
+        {
+            _vm.JSR((ushort)instr);
+            _vm.Registers[VirtualMachine.PC].Should().Be((ushort)expected);
+        }
+
+        [Test]
+        public void JsrrUpdatesTheProgramCounter()
+        {
+            // JSR R3
+            ushort instr = 0B_0100_0000_1100_0000;
+            _vm.Registers[VirtualMachine.R3] = 0x7777;
+            _vm.JSR(instr);
+            _vm.Registers[VirtualMachine.PC].Should().Be(0x7777);
+        }
+
+        [TestCase(0B_0010_1000_0000_0001, 1)] // Positive Jump (LD R4, #1)
+        [TestCase(0B_0010_1001_1111_1111, -1)] // Negative Jump (LD R4, #-1)
+        public void LdLoadsFromProgramCounterOffset(int instr, int dir)
+        {
+            _vm.Memory[VirtualMachine.PC_START + dir] = 0x7777;
+            _vm.LD((ushort)instr);
+            _vm.Registers[VirtualMachine.R4].Should().Be(0x7777);
+        }
+
+        [TestCase(0x0001, ConditionFlags.POS)]
+        [TestCase(0x0000, ConditionFlags.ZRO)]
+        [TestCase(0xFFFF, ConditionFlags.NEG)]
+        public void LdUpdatesConditionRegisters(int addr, ConditionFlags expected)
+        {
+            ushort instr = 0B_0010_1000_0000_0001;
+            _vm.Memory[VirtualMachine.PC_START + 1] = (ushort)addr;
+            _vm.LD(instr);
+            _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
+        }
+
         [TestCase(-1, 0x01FF)]   // Minus one in twos compliment 9-bit number
         [TestCase(0, 0x0000)]
         [TestCase(1, 0x0001)]
