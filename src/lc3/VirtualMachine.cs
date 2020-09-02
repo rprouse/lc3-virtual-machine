@@ -21,8 +21,7 @@ namespace LC3
 
         internal const ushort PC_START = 0x3000;
 
-        // 65536 memory locations
-        internal ushort[] Memory { get; } = new ushort[ushort.MaxValue];
+        internal VirtualMemory Memory { get; } = new VirtualMemory();
 
         // 8 general purpose registers (R0-R7)
         // 1 program counter (PC) register
