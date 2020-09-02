@@ -77,6 +77,7 @@ namespace LC3
                 catch (Exception ex)
                 {
                     _console.WriteLine($"Error: {ex.Message}");
+                    return false;
                 }
             }
             return true;

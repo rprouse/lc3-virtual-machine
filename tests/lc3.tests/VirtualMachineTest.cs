@@ -2,6 +2,7 @@ using LC3;
 using FluentAssertions;
 using NUnit.Framework;
 using LC3.Extensions;
+using System.IO;
 
 namespace lc3.tests
 {
@@ -10,7 +11,18 @@ namespace lc3.tests
         MockConsole _console;
         VirtualMachine _vm;
 
-        const string ASM_DIR = @"..\..\..\..\..\asm\";
+        string _asmDir;
+        string _rogueAsm;
+        string _2048Asm;
+        const string BAD_FILE = @".\doesntexist.obj";
+
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
+        {
+            _asmDir = Path.Combine(TestContext.CurrentContext.TestDirectory, @"..\..\..\..\..\asm\");
+            _rogueAsm = Path.Combine(_asmDir, "rogue.obj");
+            _2048Asm = Path.Combine(_asmDir, "2048.obj");
+        }
 
         [SetUp]
         public void SetUp()
@@ -32,6 +44,50 @@ namespace lc3.tests
         {
             int actual = _vm.Load(new string[0]);
             _console.WriteLineValue.Should().StartWith("lc3");
+        }
+
+        [Test]
+        public void Load_WithBadFiles_ReturnsOne()
+        {
+            int actual = _vm.Load(new[] { BAD_FILE });
+            actual.Should().Be(1);
+            _console.WriteLineValue.Should().EndWith(BAD_FILE);
+        }
+
+        [Test]
+        public void Load_WithGoodFiles_ReturnsZero()
+        {
+            int actual = _vm.Load(new[] { _rogueAsm });
+            actual.Should().Be(0);
+            _console.WriteLineValue.Should().BeNull();
+        }
+
+        [Test]
+        public void ReadImage_WithBadFiles_ReturnsOne()
+        {
+            bool actual = _vm.ReadImage(BAD_FILE);
+            actual.Should().BeFalse();
+            _console.WriteLineValue.Should().StartWith(BAD_FILE);
+        }
+
+        [Test]
+        public void ReadImage_LoadsRogueToMemory()
+        {
+            bool actual = _vm.ReadImage(_rogueAsm);
+            actual.Should().BeTrue();
+            _vm.Memory[0x3000].Should().Be(0xE003);
+            _vm.Memory[0x3001].Should().Be(0xF022);
+            _vm.Memory[0x3177].Should().Be(0x6982);
+        }
+
+        [Test]
+        public void ReadImage_Loads2048ToMemory()
+        {
+            bool actual = _vm.ReadImage(_2048Asm);
+            actual.Should().BeTrue();
+            _vm.Memory[0x3000].Should().Be(0x2C14);
+            _vm.Memory[0x3001].Should().Be(0xEA15);
+            _vm.Memory[0x3347].Should().Be(0x6781);
         }
 
         [TestCase(0, ConditionFlags.ZRO)]
