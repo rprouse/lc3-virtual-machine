@@ -227,8 +227,8 @@ namespace LC3
             // Destination register (DR)
             ushort dr = instr.Bits(11, 9); 
             ushort pcOffset9 = instr.LSB(9).SignExtend(9);
-            ushort address = (ushort)(Registers[PC] + pcOffset9);
-            Registers[dr] = Memory[address];
+            ushort addr = (ushort)(Registers[PC] + pcOffset9);
+            Registers[dr] = Memory[addr];
             UpdateFlags(dr);
         }
 
@@ -248,7 +248,8 @@ namespace LC3
             ushort dr = instr.Bits(11, 9);
             ushort baseR = instr.Bits(8, 6);
             ushort pcOffset6 = instr.LSB(6).SignExtend(6);
-            Registers[dr] = Memory[Registers[baseR] + pcOffset6];
+            ushort addr = (ushort)(Registers[baseR] + pcOffset6);
+            Registers[dr] = Memory[addr];
             UpdateFlags(dr);
         }
 
@@ -274,14 +275,16 @@ namespace LC3
         {
             ushort sr = instr.Bits(11, 9);
             ushort pcOffset9 = instr.LSB(9).SignExtend(9);
-            Memory[Registers[PC] + pcOffset9] = sr;
+            ushort addr = (ushort)(Registers[PC] + pcOffset9);
+            Memory[addr] = Registers[sr];
         }
 
         internal void STI(ushort instr)
         {
             ushort sr = instr.Bits(11, 9);
             ushort pcOffset9 = instr.LSB(9).SignExtend(9);
-            Memory[Memory[Registers[PC] + pcOffset9]] = sr;
+            ushort addr = (ushort)(Registers[PC] + pcOffset9);
+            Memory[Memory[addr]] = Registers[sr];
         }
 
         internal void STR(ushort instr)
@@ -289,7 +292,8 @@ namespace LC3
             ushort sr = instr.Bits(11, 9);
             ushort baseR = instr.Bits(8, 6);
             ushort pcOffset6 = instr.LSB(6).SignExtend(6);
-            Memory[Registers[baseR] + pcOffset6] = sr;
+            ushort addr = (ushort)(Registers[baseR] + pcOffset6);
+            Memory[addr] = Registers[sr];
         }
 
         internal bool TRAP(ushort instr)

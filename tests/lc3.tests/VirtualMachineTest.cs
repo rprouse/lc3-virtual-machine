@@ -213,5 +213,98 @@ namespace lc3.tests
             _vm.LDI(instr);
             _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
         }
+
+        [TestCase(0B_0110_1000_1000_0001, 1)] // LDR R4, R2, #1
+        [TestCase(0B_0110_1000_1011_1111, -1)] // LDR R4, R2, #-1
+        public void LdrLoadsBasePlusOffset(int instr, int dir)
+        {
+            _vm.Registers[VirtualMachine.R2] = 0x7000;
+            _vm.Memory[0x7000 + dir] = 0x7777;
+            _vm.LDR((ushort)instr);
+            _vm.Registers[VirtualMachine.R4].Should().Be(0x7777);
+        }
+
+        [TestCase(0x0001, ConditionFlags.POS)]
+        [TestCase(0x0000, ConditionFlags.ZRO)]
+        [TestCase(0xFFFF, ConditionFlags.NEG)]
+        public void LdrUpdatesConditionRegisters(int value, ConditionFlags expected)
+        {
+            ushort instr = 0B_0110_1000_1000_0001;
+            _vm.Registers[VirtualMachine.R2] = 0x7000;
+            _vm.Memory[0x7001] = (ushort)value;
+            _vm.LDR(instr);
+            _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
+        }
+
+        [TestCase(0B_1110_1000_0000_0001, VirtualMachine.PC_START + 1)]
+        [TestCase(0B_1110_1001_1111_1111, VirtualMachine.PC_START - 1)]
+        public void LeaLoadsEffectiveAddress(int instr, int expected)
+        {
+            _vm.LEA((ushort)instr);
+            _vm.Registers[VirtualMachine.R4].Should().Be((ushort)expected);
+        }
+
+        [TestCase(0B_1110_1000_0000_0001, ConditionFlags.POS)]
+        [TestCase(0B_1110_1000_0000_0000, ConditionFlags.ZRO)]
+        [TestCase(0B_1110_1001_1111_1111, ConditionFlags.NEG)]
+        public void LeaUpdatesConditionRegisters(int instr, ConditionFlags expected)
+        {
+            _vm.Registers[VirtualMachine.PC] = 0;
+            _vm.LEA((ushort)instr);
+            _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
+        }
+
+        [TestCase(0xFFFF, 0x0000)]
+        [TestCase(0x0000, 0xFFFF)]
+        [TestCase(0xAA55, 0x55AA)]
+        public void NotInvertsTheBits(int r2, int expected)
+        {
+            // NOT R4, R2
+            ushort instr = 0B_1001_1000_1011_1111;
+            _vm.Registers[VirtualMachine.R2] = (ushort)r2;
+            _vm.NOT(instr);
+            _vm.Registers[VirtualMachine.R4].Should().Be((ushort)expected);
+        }
+
+        [TestCase(0xFFF0, ConditionFlags.POS)]
+        [TestCase(0xFFFF, ConditionFlags.ZRO)]
+        [TestCase(0x0000, ConditionFlags.NEG)]
+        public void NotUpdatesConditionRegisters(int r2, ConditionFlags expected)
+        {
+            // NOT R4, R2
+            ushort instr = 0B_1001_1000_1011_1111;
+            _vm.Registers[VirtualMachine.R2] = (ushort)r2;
+            _vm.NOT(instr);
+            _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
+        }
+
+        [TestCase(0B_0011_1000_0000_0001, 1)]
+        [TestCase(0B_0011_1001_1111_1111, -1)]
+        public void StStoresToMemory(int instr, int dir)
+        {
+            _vm.Registers[VirtualMachine.R4] = 0x7777;
+            _vm.ST((ushort)instr);
+            _vm.Memory[VirtualMachine.PC_START + dir].Should().Be(0x7777);
+        }
+
+        [TestCase(0B_1011_1000_0000_0001, 1)]
+        [TestCase(0B_1011_1001_1111_1111, -1)]
+        public void StiStoresIndirectlyToMemory(int instr, int dir)
+        {
+            _vm.Memory[(ushort)(VirtualMachine.PC_START + dir)] = 0x8000;
+            _vm.Registers[VirtualMachine.R4] = 0x7777;
+            _vm.STI((ushort)instr);
+            _vm.Memory[0x8000].Should().Be(0x7777);
+        }
+
+        [TestCase(0B_0111_1000_1000_0001, 1)]
+        [TestCase(0B_0111_1000_1011_1111, -1)]
+        public void StrStoresBasePlusOffset(int instr, int dir)
+        {
+            _vm.Registers[VirtualMachine.R2] = 0x8000;
+            _vm.Registers[VirtualMachine.R4] = 0x7777;
+            _vm.STR((ushort)instr);
+            _vm.Memory[0x8000 + dir].Should().Be(0x7777);
+        }
     }
 }
