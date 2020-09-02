@@ -53,5 +53,13 @@ namespace LC3.Extensions
             ushort mask = (ushort)(0xFFFF >> (15 - msb + lsb));
             return (ushort)((ushort)(x >> lsb) & mask);
         }
+
+        /// <summary>
+        /// Swaps Big-Endian to Little-Endian and visa-versa
+        /// </summary>
+        /// <param name="x"></param>
+        /// <returns></returns>
+        public static ushort Swap16(this ushort x) =>
+            (ushort)((x << 8) | (x >> 8));
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using LC3.Extensions;
 
 namespace LC3
@@ -49,6 +50,30 @@ namespace LC3
 
         internal bool ReadImage(string filename)
         {
+            if(File.Exists(filename))
+            {
+                using (var reader = new BinaryReader(File.Open(filename, FileMode.Open)))
+                {
+                    try
+                    {
+                        ushort origin = reader.ReadUInt16().Swap16();
+                        while (true)
+                        {
+                            Memory[origin++] = reader.ReadUInt16().Swap16();
+                        }
+                    }
+                    catch (EndOfStreamException) { }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error: {ex.Message}");
+                    }
+                }
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"{filename} does not exist");
+            }
             return false;
         }
 
@@ -318,7 +343,7 @@ namespace LC3
                     break;
                 case TrapVector.HALT:
                     // Halt execution and print a message on the console
-                    Console.WriteLine("== HALT AND CATCH FIRE ==");
+                    Console.WriteLine("HALT AND CATCH FIRE");
                     return true;
                 default:
                     break;

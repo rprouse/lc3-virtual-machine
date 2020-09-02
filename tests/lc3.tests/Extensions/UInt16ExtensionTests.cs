@@ -57,5 +57,14 @@ namespace lc3.tests.Extensions
             ushort actual = ((ushort)x).Bits((ushort)msb, (ushort)lsb);
             actual.Should().Be((ushort)expected);
         }
+
+        [TestCase(0xFF00, 0x00FF)]
+        [TestCase(0x00FF, 0xFF00)]
+        [TestCase(0x0FF0, 0xF00F)]
+        public void TestSwap16(int x, int expected)
+        {
+            ushort actual = ((ushort)x).Swap16();
+            actual.Should().Be((ushort)expected);
+        }
     }
 }
