@@ -332,7 +332,8 @@ namespace LC3
         /// </summary>
         private void TRAP_GETC()
         {
-            throw new NotImplementedException();
+            ConsoleKeyInfo key = Console.ReadKey(false);
+            Registers[R0] = key.KeyChar;
         }
 
         /// <summary>
@@ -340,7 +341,7 @@ namespace LC3
         /// </summary>
         private void TRAP_OUT()
         {
-            throw new NotImplementedException();
+            Console.Write((char)Registers[R0]);
         }
 
         /// <summary>
@@ -351,7 +352,11 @@ namespace LC3
         /// </summary>
         private void TRAP_PUTS()
         {
-            throw new NotImplementedException();
+            ushort ptr = Registers[R0];
+            while(Memory[ptr] != 0x0000)
+            {
+                Console.Write((char)Memory[ptr++]);
+            }
         }
 
         /// <summary>
@@ -361,7 +366,9 @@ namespace LC3
         /// </summary>
         private void TRAP_IN()
         {
-            throw new NotImplementedException();
+            Console.Write("Enter a character: ");
+            ConsoleKeyInfo key = Console.ReadKey(true);
+            Registers[R0] = key.KeyChar;
         }
 
         /// <summary>
@@ -376,7 +383,16 @@ namespace LC3
         /// </summary>
         private void TRAP_PUTSP()
         {
-            throw new NotImplementedException();
+            ushort ptr = Registers[R0];
+            while(Memory[ptr] != 0x0000)
+            {
+                char c1 = (char)Memory[ptr].LSB(8);
+                Console.Write(c1);
+
+                char c2 = (char)Memory[ptr++].MSB(8);
+                if (c2 != 0x00)
+                    Console.Write(c2);
+            }
         }
     }
 }
