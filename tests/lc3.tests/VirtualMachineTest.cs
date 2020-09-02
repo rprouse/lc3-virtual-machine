@@ -7,12 +7,14 @@ namespace lc3.tests
 {
     public class VirtualMachineTest
     {
+        MockConsole _console;
         VirtualMachine _vm;
 
         [SetUp]
         public void SetUp()
         {
-            _vm = new VirtualMachine();
+            _console = new MockConsole();
+            _vm = new VirtualMachine(_console);
             _vm.Registers[VirtualMachine.PC] = VirtualMachine.PC_START;
         }
 
@@ -21,6 +23,13 @@ namespace lc3.tests
         {
             int actual = _vm.Load(new string[0]);
             actual.Should().Be(2);
+        }
+
+        [Test]
+        public void Load_WithNoArguments_WritesToTheConsole()
+        {
+            int actual = _vm.Load(new string[0]);
+            _console.WriteLineValue.Should().StartWith("lc3");
         }
 
         [TestCase(0, ConditionFlags.ZRO)]
@@ -305,6 +314,106 @@ namespace lc3.tests
             _vm.Registers[VirtualMachine.R4] = 0x7777;
             _vm.STR((ushort)instr);
             _vm.Memory[0x8000 + dir].Should().Be(0x7777);
+        }
+
+        [Test]
+        public void TrapGetCGetsACharacterNotEchoedToTerminal()
+        {
+            ushort instr = 0xF020;
+            bool result = _vm.TRAP(instr);
+            result.Should().BeFalse();
+            _console.ReadKeyCalled.Should().BeTrue();
+            _console.InterceptValue.Should().BeTrue();
+            _vm.Registers[VirtualMachine.R0].Should().Be(MockConsole.DefaultKey);
+        }
+
+        [Test]
+        public void TrapOutWritesACharacterFromRegister0()
+        {
+            ushort instr = 0xF021;
+            _vm.Registers[VirtualMachine.R0] = 'b';
+            bool result = _vm.TRAP(instr);
+            result.Should().BeFalse();
+            _console.WriteCharValue.Should().Be('b');
+        }
+
+        [Test]
+        public void TrapPutSOutputsAWordString()
+        {
+            ushort instr = 0xF022;
+            ushort addr = 0x7000;
+            _vm.Registers[VirtualMachine.R0] = addr;
+            _vm.Memory[addr++] = 'H';
+            _vm.Memory[addr++] = 'e';
+            _vm.Memory[addr++] = 'l';
+            _vm.Memory[addr++] = 'l';
+            _vm.Memory[addr++] = 'o';
+            _vm.Memory[addr++] = ' ';
+            _vm.Memory[addr++] = 'W';
+            _vm.Memory[addr++] = 'o';
+            _vm.Memory[addr++] = 'r';
+            _vm.Memory[addr++] = 'l';
+            _vm.Memory[addr++] = 'd';
+            _vm.Memory[addr++] = 0x00;
+            bool result = _vm.TRAP(instr);
+            result.Should().BeFalse();
+            _console.WriteCharBuffer.ToString().Should().Be("Hello World");
+        }
+
+        [Test]
+        public void TrapInGetsCharacterEchoedToTerminal()
+        {
+            ushort instr = 0xF023;
+            bool result = _vm.TRAP(instr);
+            result.Should().BeFalse();
+            _console.ReadKeyCalled.Should().BeTrue();
+            _console.InterceptValue.Should().BeFalse();
+            _vm.Registers[VirtualMachine.R0].Should().Be(MockConsole.DefaultKey);
+        }
+
+        [Test]
+        public void TrapPutSPOutputsAnOddLengthByteString()
+        {
+            ushort instr = 0xF024;
+            ushort addr = 0x7000;
+            _vm.Registers[VirtualMachine.R0] = addr;
+            _vm.Memory[addr++] = 'H' | ('e' << 8);
+            _vm.Memory[addr++] = 'l' | ('l' << 8);
+            _vm.Memory[addr++] = 'o' | (' ' << 8);
+            _vm.Memory[addr++] = 'W' | ('o' << 8);
+            _vm.Memory[addr++] = 'r' | ('l' << 8);
+            _vm.Memory[addr++] = 'd';
+            _vm.Memory[addr++] = 0x00;
+            bool result = _vm.TRAP(instr);
+            result.Should().BeFalse();
+            _console.WriteCharBuffer.ToString().Should().Be("Hello World");
+        }
+
+        [Test]
+        public void TrapPutSPOutputsAnEvenLengthByteString()
+        {
+            ushort instr = 0xF024;
+            ushort addr = 0x7000;
+            _vm.Registers[VirtualMachine.R0] = addr;
+            _vm.Memory[addr++] = 'H' | ('e' << 8);
+            _vm.Memory[addr++] = 'l' | ('l' << 8);
+            _vm.Memory[addr++] = 'o' | (' ' << 8);
+            _vm.Memory[addr++] = 'W' | ('o' << 8);
+            _vm.Memory[addr++] = 'r' | ('l' << 8);
+            _vm.Memory[addr++] = 'd' | ('!' << 8);
+            _vm.Memory[addr++] = 0x00;
+            bool result = _vm.TRAP(instr);
+            result.Should().BeFalse();
+            _console.WriteCharBuffer.ToString().Should().Be("Hello World!");
+        }
+
+        [Test]
+        public void TrapHaltHaltsTheProgram()
+        {
+            ushort instr = 0xF025;
+            bool result = _vm.TRAP(instr);
+            result.Should().BeTrue();
+            _console.WriteLineValue.Should().Contain("HALT");
         }
     }
 }

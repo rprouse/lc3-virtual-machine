@@ -21,6 +21,8 @@ namespace LC3
 
         internal const ushort PC_START = 0x3000;
 
+        private readonly IConsole _console;
+
         internal VirtualMemory Memory { get; } = new VirtualMemory();
 
         // 8 general purpose registers (R0-R7)
@@ -28,11 +30,16 @@ namespace LC3
         // 1 condition flags (COND) register
         internal ushort[] Registers { get; } = new ushort[COUNT];
 
+        public VirtualMachine(IConsole console)
+        {
+            _console = console;
+        }
+
         public int Load(string[] args)
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("lc3 [image-file] ...");
+                _console.WriteLine("lc3 [image-file] ...");
                 return 2;
             }
 
@@ -40,7 +47,7 @@ namespace LC3
             {
                 if (!ReadImage(arg))
                 {
-                    Console.WriteLine($"Failed to load image: {arg}");
+                    _console.WriteLine($"Failed to load image: {arg}");
                     return 1;
                 }
             }
@@ -64,14 +71,14 @@ namespace LC3
                     catch (EndOfStreamException) { }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Error: {ex.Message}");
+                        _console.WriteLine($"Error: {ex.Message}");
                     }
                 }
                 return true;
             }
             else
             {
-                Console.WriteLine($"{filename} does not exist");
+                _console.WriteLine($"{filename} does not exist");
             }
             return false;
         }
@@ -342,7 +349,7 @@ namespace LC3
                     break;
                 case TrapVector.HALT:
                     // Halt execution and print a message on the console
-                    Console.WriteLine("HALT AND CATCH FIRE");
+                    _console.WriteLine("HALT AND CATCH FIRE");
                     return true;
                 default:
                     break;
@@ -356,7 +363,7 @@ namespace LC3
         /// </summary>
         private void TRAP_GETC()
         {
-            ConsoleKeyInfo key = Console.ReadKey(false);
+            ConsoleKeyInfo key = _console.ReadKey(true);
             Registers[R0] = key.KeyChar;
         }
 
@@ -365,7 +372,7 @@ namespace LC3
         /// </summary>
         private void TRAP_OUT()
         {
-            Console.Write((char)Registers[R0]);
+            _console.Write((char)Registers[R0]);
         }
 
         /// <summary>
@@ -379,7 +386,7 @@ namespace LC3
             ushort ptr = Registers[R0];
             while(Memory[ptr] != 0x0000)
             {
-                Console.Write((char)Memory[ptr++]);
+                _console.Write((char)Memory[ptr++]);
             }
         }
 
@@ -390,8 +397,8 @@ namespace LC3
         /// </summary>
         private void TRAP_IN()
         {
-            Console.Write("Enter a character: ");
-            ConsoleKeyInfo key = Console.ReadKey(true);
+            _console.Write("Enter a character: ");
+            ConsoleKeyInfo key = _console.ReadKey(false);
             Registers[R0] = key.KeyChar;
         }
 
@@ -411,11 +418,11 @@ namespace LC3
             while(Memory[ptr] != 0x0000)
             {
                 char c1 = (char)Memory[ptr].LSB(8);
-                Console.Write(c1);
+                _console.Write(c1);
 
                 char c2 = (char)Memory[ptr++].MSB(8);
                 if (c2 != 0x00)
-                    Console.Write(c2);
+                    _console.Write(c2);
             }
         }
     }

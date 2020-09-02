@@ -9,7 +9,7 @@ namespace LC3
     {
         static int Main(string[] args)
         {
-            var vm = new VirtualMachine();
+            var vm = new VirtualMachine(new VirtualConsole());
             var result = vm.Load(args);
             if (result != 0)
                 return result;
