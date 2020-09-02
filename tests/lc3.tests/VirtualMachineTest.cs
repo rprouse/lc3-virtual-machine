@@ -75,6 +75,42 @@ namespace lc3.tests
             _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
         }
 
+        [TestCase(0x55FF, 0xAAAA, 0x00AA)]
+        [TestCase(0xFFFF, 0xFFFF, 0xFFFF)]
+        public void AndRegister(int r3, int r4, int expected)
+        {
+            // AND R2, R3, R4 (R2 = R3 && R4)
+            ushort instr = 0x54C4;
+            _vm.Registers[VirtualMachine.R3] = (ushort)r3;
+            _vm.Registers[VirtualMachine.R4] = (ushort)r4;
+            _vm.AND(instr);
+            _vm.Registers[VirtualMachine.R2].Should().Be((ushort)expected);
+        }
+
+        [TestCase(0x55FF, 0x0A, 0x000A)]
+        [TestCase(0xFFFF, 0x1F, 0xFFFF)]    // 0x1F is the two's compliment -1
+        public void AndImmediate(int r3, int imm5, int expected)
+        {
+            // AND R2, R3, #imm5 (R2 = R3 && imm5)
+            ushort instr = (ushort)(0x54E0 | (ushort)imm5);
+            _vm.Registers[VirtualMachine.R3] = (ushort)r3;
+            _vm.AND(instr);
+            _vm.Registers[VirtualMachine.R2].Should().Be((ushort)expected);
+        }
+
+        [TestCase(0x55FF, 0xAAAA, ConditionFlags.POS)]
+        [TestCase(0xFF00, 0x00FF, ConditionFlags.ZRO)]
+        [TestCase(0xFFFF, 0xFFFF, ConditionFlags.NEG)]
+        public void AndUpdatesConditionRegister(int r3, int r4, ConditionFlags expected)
+        {
+            // AND R2, R3, R4 (R2 = R3 && R4)
+            ushort instr = 0x54C4;
+            _vm.Registers[VirtualMachine.R3] = (ushort)r3;
+            _vm.Registers[VirtualMachine.R4] = (ushort)r4;
+            _vm.AND(instr);
+            _vm.Registers[VirtualMachine.COND].Should().Be((ushort)expected);
+        }
+
         [TestCase(-1, 0x01FF)]   // Minus one in twos compliment 9-bit number
         [TestCase(0, 0x0000)]
         [TestCase(1, 0x0001)]
