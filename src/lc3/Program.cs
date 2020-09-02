@@ -14,7 +14,6 @@ namespace LC3
             if (result != 0)
                 return result;
 
-            vm.Setup();
             vm.Run();
 
             return 0;

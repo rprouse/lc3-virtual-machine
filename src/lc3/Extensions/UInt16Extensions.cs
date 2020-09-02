@@ -1,5 +1,3 @@
-using System;
-
 namespace LC3.Extensions
 {
     public static class UInt16Extensions

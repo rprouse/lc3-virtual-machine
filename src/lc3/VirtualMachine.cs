@@ -23,7 +23,7 @@ namespace LC3
 
         private readonly IConsole _console;
 
-        internal VirtualMemory Memory { get; } = new VirtualMemory();
+        internal VirtualMemory Memory { get; }
 
         // 8 general purpose registers (R0-R7)
         // 1 program counter (PC) register
@@ -33,6 +33,7 @@ namespace LC3
         public VirtualMachine(IConsole console)
         {
             _console = console;
+            Memory = new VirtualMemory(_console);
         }
 
         public int Load(string[] args)
@@ -56,36 +57,29 @@ namespace LC3
 
         internal bool ReadImage(string filename)
         {
-            if(File.Exists(filename))
-            {
-                using (var reader = new BinaryReader(File.Open(filename, FileMode.Open)))
-                {
-                    try
-                    {
-                        ushort origin = reader.ReadUInt16().Swap16();
-                        while (true)
-                        {
-                            Memory[origin++] = reader.ReadUInt16().Swap16();
-                        }
-                    }
-                    catch (EndOfStreamException) { }
-                    catch (Exception ex)
-                    {
-                        _console.WriteLine($"Error: {ex.Message}");
-                    }
-                }
-                return true;
-            }
-            else
+            if (!File.Exists(filename))
             {
                 _console.WriteLine($"{filename} does not exist");
+                return false;
             }
-            return false;
-        }
 
-        public void Setup()
-        {
-
+            using (var reader = new BinaryReader(File.Open(filename, FileMode.Open)))
+            {
+                try
+                {
+                    ushort origin = reader.ReadUInt16().Swap16();
+                    while (true)
+                    {
+                        Memory[origin++] = reader.ReadUInt16().Swap16();
+                    }
+                }
+                catch (EndOfStreamException) { }
+                catch (Exception ex)
+                {
+                    _console.WriteLine($"Error: {ex.Message}");
+                }
+            }
+            return true;
         }
 
         public void Run()
@@ -157,7 +151,7 @@ namespace LC3
 
         internal void UpdateFlags(ushort register)
         {
-            if(Registers[register] == 0)
+            if (Registers[register] == 0)
             {
                 Registers[COND] = (ushort)ConditionFlags.ZRO;
             }
@@ -182,7 +176,7 @@ namespace LC3
             // Immediate or register mode
             ushort imm_flag = instr.Bits(5, 5);
 
-            if(imm_flag == 1)
+            if (imm_flag == 1)
             {
                 ushort imm5 = instr.LSB(5).SignExtend(5);
                 Registers[dr] = (ushort)(Registers[sr1] + imm5);
@@ -223,7 +217,7 @@ namespace LC3
         {
             ushort nzp = instr.Bits(11, 9);
             ushort pcOffset9 = instr.LSB(9).SignExtend(9);
-            if(nzp == Registers[COND])
+            if (nzp == Registers[COND])
             {
                 Registers[PC] += pcOffset9;
             }
@@ -241,7 +235,7 @@ namespace LC3
         {
             Registers[R7] = Registers[PC];
             ushort flag = instr.Bits(11, 11);
-            if(flag == 0)
+            if (flag == 0)
             {
                 ushort baseR = instr.Bits(8, 6);
                 Registers[PC] = Registers[baseR];
@@ -256,7 +250,7 @@ namespace LC3
         internal void LD(ushort instr)
         {
             // Destination register (DR)
-            ushort dr = instr.Bits(11, 9); 
+            ushort dr = instr.Bits(11, 9);
             ushort pcOffset9 = instr.LSB(9).SignExtend(9);
             ushort addr = (ushort)(Registers[PC] + pcOffset9);
             Registers[dr] = Memory[addr];
@@ -351,8 +345,6 @@ namespace LC3
                     // Halt execution and print a message on the console
                     _console.WriteLine("HALT AND CATCH FIRE");
                     return true;
-                default:
-                    break;
             }
             return false;
         }
@@ -384,7 +376,7 @@ namespace LC3
         private void TRAP_PUTS()
         {
             ushort ptr = Registers[R0];
-            while(Memory[ptr] != 0x0000)
+            while (Memory[ptr] != 0x0000)
             {
                 _console.Write((char)Memory[ptr++]);
             }
@@ -415,7 +407,7 @@ namespace LC3
         private void TRAP_PUTSP()
         {
             ushort ptr = Registers[R0];
-            while(Memory[ptr] != 0x0000)
+            while (Memory[ptr] != 0x0000)
             {
                 char c1 = (char)Memory[ptr].LSB(8);
                 _console.Write(c1);

@@ -10,6 +10,8 @@ namespace lc3.tests
         MockConsole _console;
         VirtualMachine _vm;
 
+        const string ASM_DIR = @"..\..\..\..\..\asm\";
+
         [SetUp]
         public void SetUp()
         {

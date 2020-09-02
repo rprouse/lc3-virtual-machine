@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using LC3.Extensions;
 using FluentAssertions;
+using LC3.Extensions;
 using NUnit.Framework;
 
 namespace lc3.tests.Extensions

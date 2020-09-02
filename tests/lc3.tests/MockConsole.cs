@@ -9,7 +9,7 @@ namespace lc3.tests
         public const char DefaultKey = 'M';
         public readonly ConsoleKeyInfo DefaultConsoleKeyInfo = new ConsoleKeyInfo(DefaultKey, ConsoleKey.A, true, false, false);
 
-        public bool KeyAvailable => throw new NotImplementedException();
+        public bool KeyAvailable { get; set; }
 
         public bool ReadCalled { get; set; }
         public int Read()

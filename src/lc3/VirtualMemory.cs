@@ -5,11 +5,18 @@ namespace LC3
     public class VirtualMemory
     {
         // Memory mapped registers
-        const ushort KBSR = 0xFE00; // keyboard status
-        const ushort KBDR = 0xFE02; // keyboard data
+        internal const ushort KBSR = 0xFE00; // keyboard status
+        internal const ushort KBDR = 0xFE02; // keyboard data
+
+        private readonly IConsole _console;
 
         // 65536 memory locations
         ushort[] _memory { get; } = new ushort[ushort.MaxValue];
+
+        public VirtualMemory(IConsole console)
+        {
+            _console = console;
+        }
 
         public ushort this[int address]
         {
@@ -17,10 +24,10 @@ namespace LC3
             {
                 if(address == KBSR)
                 {
-                    if(Console.KeyAvailable)
+                    if(_console.KeyAvailable)
                     {
                         _memory[KBSR] = (1 << 15);
-                        _memory[KBDR] = Convert.ToChar(Console.Read());
+                        _memory[KBDR] = Convert.ToChar(_console.Read());
                     }
                     else
                     {
