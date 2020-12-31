@@ -144,7 +144,8 @@ namespace LC3
                     case Instuctions.RES:
                     case Instuctions.RTI:
                     default:
-                        //{ BAD OPCODE, 7}
+                        _console.WriteLine($"Bad OPCODE 0x{instr:X4}");
+                        running = false;
                         break;
                 }
             }

@@ -19,7 +19,13 @@ namespace lc3.tests
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _asmDir = Path.Combine(TestContext.CurrentContext.TestDirectory, @"..\..\..\..\..\asm\");
+            string currentDir = TestContext.CurrentContext.TestDirectory;
+            _asmDir = Path.Combine(currentDir, @"..\..\..\..\..\asm\");
+            // Live unit testing is in different directory under the .vs directory
+            if(!Directory.Exists(_asmDir))
+            {
+                _asmDir = Path.Combine(currentDir, @"..\..\..\..\..\..\..\..\..\asm\");
+            }
             _rogueAsm = Path.Combine(_asmDir, "rogue.obj");
             _2048Asm = Path.Combine(_asmDir, "2048.obj");
         }
